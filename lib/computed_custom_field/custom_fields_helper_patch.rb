@@ -20,8 +20,3 @@ module ComputedCustomField
     end
   end
 end
-
-unless CustomFieldsHelper.included_modules
-                         .include?(ComputedCustomField::CustomFieldsHelperPatch)
-  CustomFieldsHelper.send :include, ComputedCustomField::CustomFieldsHelperPatch
-end

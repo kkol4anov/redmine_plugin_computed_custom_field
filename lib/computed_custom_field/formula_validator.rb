@@ -5,22 +5,14 @@ module ComputedCustomField
       object = custom_field_instance(record)
       define_validate_record_method(object)
       object.validate_record record
-    rescue Exception => e
+    rescue StandardError, SyntaxError => e
       record.errors[:formula] << e.message
     end
 
     private
 
     def custom_field_instance(record)
-      eval(record.type.sub('CustomField', '')).new
-    end
-
-    def grouped_custom_fields
-      @grouped_custom_fields ||= CustomField.all.group_by(&:id)
-    end
-
-    def custom_field_ids(record)
-      record.formula.scan(/cfs\[(\d+)\]/).flatten.map(&:to_i)
+      record.class.customized_class.new
     end
 
     def define_validate_record_method(object)
@@ -28,7 +20,9 @@ module ComputedCustomField
         grouped_cfs = CustomField.all.group_by(&:id)
         cf_ids = record.formula.scan(/cfs\[(\d+)\]/).flatten.map(&:to_i)
         cfs = cf_ids.each_with_object({}) do |cf_id, hash|
-          hash[cf_id] = grouped_cfs[cf_id].first.cast_value '1'
+          field = Array(grouped_cfs[cf_id]).first
+          raise ArgumentError, "Unknown custom field: #{cf_id}" unless field
+          hash[cf_id] = field.cast_value '1'
         end
         eval record.formula
       end

@@ -1,22 +1,18 @@
 Redmine::Plugin.register :computed_custom_field do
   name 'Computed custom field'
-  author 'Yakov Annikov'
-  url 'https://github.com/annikoff/redmine_plugin_computed_custom_field'
+  author 'Yakov Annikov / Konstantin Kolchanov'
+  url 'https://github.com/kkol4anov/redmine_plugin_computed_custom_field'
   description ''
-  version '1.0.7'
+  version '1.0.0.rc1'
+  requires_redmine version_or_higher: '4.2.0'
   settings default: {}
 end
 
-$LOAD_PATH.unshift "#{File.dirname(__FILE__)}/lib"
-require 'computed_custom_field'
-#require 'computed_custom_field/custom_field_patch'
-require 'computed_custom_field/custom_fields_helper_patch'
-#require 'computed_custom_field/model_patch'
-#require 'computed_custom_field/issue_patch'
+# Hooks are registered once; reloadable models and helpers are patched on each
+# Rails prepare cycle (including the first application boot).
 require 'computed_custom_field/hooks'
 
-RedmineApp::Application.configure do
-  config.after_initialize do
-    ComputedCustomField.patch_models
-  end
+Rails.application.config.to_prepare do
+  require_dependency 'computed_custom_field'
+  ComputedCustomField.patch_models
 end

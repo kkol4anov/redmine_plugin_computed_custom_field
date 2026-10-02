@@ -22,19 +22,20 @@ module ComputedCustomField
       self.custom_field_values = {
         custom_field.id => prepare_computed_value(custom_field, value)
       }
-    rescue Exception => e
-      errors.add :base, l(:error_while_formula_computing,
+    rescue StandardError, SyntaxError => e
+      errors.add :base, ::I18n.t(:error_while_formula_computing,
                           custom_field_name: custom_field.name,
                           message: e.message)
     end
     # rubocop:enable Lint/UselessAssignment, Security/Eval
 
     def parse_computed_field_formula(formula)
-      @grouped_cfvs ||= custom_field_values
-                        .group_by { |cfv| cfv.custom_field.id }
+      # Redmine replaces CustomFieldValue objects on reload/tracker changes.
+      # Never retain a second cache across validations of the same model.
+      grouped_cfvs = custom_field_values.group_by { |cfv| cfv.custom_field.id }
       cf_ids = formula.scan(/cfs\[(\d+)\]/).flatten.map(&:to_i)
       cf_ids.each_with_object({}) do |cf_id, hash|
-        cfv = @grouped_cfvs[cf_id].first
+        cfv = Array(grouped_cfvs[cf_id]).first
         hash[cf_id] = cfv ? cfv.custom_field.cast_value(cfv.value) : nil
       end
     end

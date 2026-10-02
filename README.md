@@ -57,7 +57,7 @@ rake redmine:plugins:migrate
 
 ### Compatibility
 
-The plugins supports the following Redmine versions: 4.0.x, 3.4.x, 3.3.x, 3.2.x, 3.1.x, 3.0.x, 2.6.x, 2.5.x.
+This patched version targets Redmine 4.2.9 with Ruby 2.7.4, Rails 5.2.8.1 and MariaDB 10.5.18 (Mysql2). Earlier Redmine releases are outside the scope of this patch. Integration testing on the target stack is required before production use. Version of the plugin was reset to 1.0.0. It will be maintained independent of upstream.
 
 ### Examples:
 ```ruby
